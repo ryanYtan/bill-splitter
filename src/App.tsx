@@ -1,22 +1,67 @@
-import React from 'react';
+import { Alert, AppBar, Avatar, Box, Button, Container, Divider, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, TextField, Typography } from '@mui/material'
+import { useState } from 'react'
+import { Person } from './types/Person'
+import { Item } from './types/Item'
+import UserList from './components/UserList';
+import ItemizedBill from './components/ItemizedBill';
+import styled from '@emotion/styled';
 
-function App() {
+const PREFIX = 'App'
+const classes = {
+  gridContainer: `${PREFIX}-grid-container`,
+  gridItem: `${PREFIX}-grid-item`,
+  gridItemPaper: `${PREFIX}-grid-item-paper`,
+}
+const Root = styled('div')({
+  [`& .${classes.gridContainer}`]: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  [`.${classes.gridItem}`]: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+  [`.${classes.gridItemPaper}`]: {
+    width: '100%',
+  }
+})
+
+const App = () => {
+  const [people, setPeople] = useState<Person[]>([]);
+  const [items, setItems] = useState<Item[]>([]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Root>
+      <Grid container spacing={2} className={classes.gridContainer} sx={{ pt: { xs: 1, md: 10 }, px: { xs: 2, md: 5 } }}>
+
+        {/* Header */}
+        <Grid item xs={12}>
+          <Alert icon={false} sx={{ display: 'block', textAlign: 'center' }}>
+            <Typography variant='h1' fontSize={24}>
+              Simple Bill Splitter
+            </Typography>
+          </Alert>
+        </Grid>
+
+        {/* Add users */}
+        <Grid item xs={12} lg={4} className={classes.gridItem}>
+          <Paper className={classes.gridItemPaper}>
+            <UserList people={people} setPeople={setPeople} />
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} lg={4} className={classes.gridItem}>
+          <Paper className={classes.gridItemPaper}>
+            <ItemizedBill people={people} items={items} setItems={setItems} />
+          </Paper>
+        </Grid>
+        <Grid item xs={12} lg={4} className={classes.gridItem}>
+          <Paper className={classes.gridItemPaper}>
+          </Paper>
+        </Grid>
+
+      </Grid>
+    </Root>
   );
 }
 
