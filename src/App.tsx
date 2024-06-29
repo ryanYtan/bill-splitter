@@ -1,4 +1,4 @@
-import { Alert, AppBar, Avatar, Box, Button, Container, Divider, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemText, Paper, Stack, TextField, Typography } from '@mui/material'
+import { Alert, Grid, Paper, Typography } from '@mui/material'
 import { useState } from 'react'
 import { Person } from './types/Person'
 import { Item } from './types/Item'
@@ -52,7 +52,7 @@ const App = () => {
 
         <Grid item xs={12} lg={4} className={classes.gridItem}>
           <Paper className={classes.gridItemPaper}>
-            <ItemizedBill people={people} items={items} setItems={setItems} />
+            <ItemizedBill allPeople={people} items={items} setItems={setItems} />
           </Paper>
         </Grid>
         <Grid item xs={12} lg={4} className={classes.gridItem}>

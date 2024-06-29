@@ -1,26 +1,47 @@
 import React, { useState } from 'react'
 import { Person } from '../types/Person'
 import { Item } from '../types/Item'
-import { Box, Button, Card, Dialog, Divider, Grid, IconButton, InputAdornment, List, ListItem, ListItemIcon, ListItemText, Stack, TextField, Typography } from '@mui/material'
-import FastfoodIcon from '@mui/icons-material/Fastfood';
+import {
+  Box,
+  Button,
+  Chip,
+  Dialog,
+  Divider,
+  Grid,
+  IconButton,
+  InputAdornment,
+  List,
+  ListItem,
+  Stack,
+  TextField,
+  Typography
+} from '@mui/material'
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete'
+import FaceIcon from "@mui/icons-material/Face";
 
 export interface ItemizedBillProps {
-  people: Person[]
+  allPeople: Person[]
   items: Item[]
   setItems: React.Dispatch<React.SetStateAction<Item[]>>
 }
 
 const ItemizedBill = (props: ItemizedBillProps) => {
-  const [open, setOpen] = useState(false)
+  const [openAddItem, setOpenAddItem] = useState(false)
+  const [openAddPerson, setOpenAddPerson] = useState(false)
+
+  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null)
+
+  //form values
   const [itemName, setItemName] = useState('')
   const [itemPrice, setItemPrice] = useState('0')
   const [itemQuantity, setItemQuantity] = useState('1')
   const [itemNameError, setItemNameError] = useState('')
   const [itemPriceError, setItemPriceError] = useState('')
   const [itemQuantityError, setItemQuantityError] = useState('')
-  const { people, items, setItems } = props
+
+
+  const { allPeople, items, setItems } = props
 
   const handleDeleteItem = (itemName: string) => {
     setItems(items.filter((item) => item.title !== itemName))
@@ -70,12 +91,12 @@ const ItemizedBill = (props: ItemizedBillProps) => {
     setItemName('')
     setItemPrice('0')
     setItemQuantity('1')
-    setOpen(false)
+    setOpenAddItem(false)
   }
 
   return (
     <List sx={{ paddingBottom: 0 }}>
-      {items.map((item) => (
+      {items.map((item, index) => (
         <>
           <ListItem
             secondaryAction={
@@ -91,7 +112,7 @@ const ItemizedBill = (props: ItemizedBillProps) => {
                     {item.title}
                   </Typography>
                   <Typography variant='button'>
-                    $ {item.price}
+                    ${item.price.toFixed(2)}
                   </Typography>
                   <Typography variant='body1' fontSize={12}>
                     QTY: {item.quantity}
@@ -99,19 +120,29 @@ const ItemizedBill = (props: ItemizedBillProps) => {
                 </Box>
               </Grid>
               <Grid item xs={6}>
-                hello!
+                <Box border='1px dashed' height='100%' borderRadius={1} display='flex' justifyContent='center' alignItems='center'>
+                  <IconButton onClick={() => {
+                    setSelectedItemIndex(index)
+                    setOpenAddPerson(true)
+                  }}>
+                    <AddIcon />
+                  </IconButton>
+                </Box>
               </Grid>
             </Grid>
           </ListItem>
           <Divider />
         </>
       ))}
+      {selectedItemIndex}
+      {' '}
+      {JSON.stringify(items)}
       <ListItem>
-        <Button fullWidth onClick={() => setOpen(true)}>
+        <Button fullWidth onClick={() => setOpenAddItem(true)}>
           Add Item
         </Button>
       </ListItem>
-      <Dialog open={open} onClose={() => setOpen(false)} fullWidth>
+      <Dialog open={openAddItem} onClose={() => setOpenAddItem(false)} fullWidth>
         <Box px={2} py={2}>
           <form onSubmit={handleSubmit}>
             <Stack spacing={2} textAlign='center'>
@@ -128,6 +159,7 @@ const ItemizedBill = (props: ItemizedBillProps) => {
                 error={!!itemNameError}
                 onChange={(e) => setItemName(e.target.value)}
                 helperText={itemNameError || ' '}
+                placeholder='e.g. Chicken Rice'
                 InputProps={{
                   autoComplete: 'off',
                 }}
@@ -167,6 +199,46 @@ const ItemizedBill = (props: ItemizedBillProps) => {
               </Box>
             </Stack>
           </form>
+        </Box>
+      </Dialog>
+      <Dialog open={openAddPerson} onClose={() => setOpenAddPerson(false)} fullWidth>
+        <Box px={2} py={2}>
+          <Stack spacing={1}>
+            <Box textAlign='center'>
+              <Typography variant='h2' fontSize={28}>
+                Add Contributions
+              </Typography>
+            </Box>
+            <Divider />
+            <Box display='flex' justifyContent='center' flexDirection='column' textAlign='center'>
+              <Typography variant='body1' fontSize={24} fontWeight='bold'>
+                {selectedItemIndex && items[selectedItemIndex]?.title}
+              </Typography>
+              <Box display='flex' gap={1} justifyContent='center' textAlign='center'>
+                <Typography variant='button' fontSize={16}>
+                  $ {selectedItemIndex && items[selectedItemIndex].price.toFixed(2)}
+                </Typography>
+                <Typography variant='button' fontSize={16}>
+                  (QTY: {selectedItemIndex && items[selectedItemIndex].quantity})
+                </Typography>
+              </Box>
+            </Box>
+            <Divider />
+            <Box>
+              {allPeople.map((person) => (
+                <Chip
+                  key={person.name}
+                  label={person.name}
+                  icon={<FaceIcon />}
+                  color={selectedItemIndex && items[selectedItemIndex]?.contributed.some(p => p.name === person.name) ? 'primary' : 'default'}
+                  onClick={() => {
+
+                  }}
+                  sx={{ m: 0.5 }}
+                />
+                ))}
+            </Box>
+          </Stack>
         </Box>
       </Dialog>
     </List>
