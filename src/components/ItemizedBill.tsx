@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Person } from '../types/Person'
 import { Item } from '../types/Item'
 import {
@@ -16,9 +16,8 @@ import {
   TextField,
   Typography
 } from '@mui/material'
-import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete'
-import FaceIcon from "@mui/icons-material/Face";
+import BillItem from './BillItem'
 
 export interface ItemizedBillProps {
   allPeople: Person[]
@@ -28,9 +27,6 @@ export interface ItemizedBillProps {
 
 const ItemizedBill = (props: ItemizedBillProps) => {
   const [openAddItem, setOpenAddItem] = useState(false)
-  const [openAddPerson, setOpenAddPerson] = useState(false)
-
-  const [selectedItemIndex, setSelectedItemIndex] = useState<number | null>(null)
 
   //form values
   const [itemName, setItemName] = useState('')
@@ -39,7 +35,6 @@ const ItemizedBill = (props: ItemizedBillProps) => {
   const [itemNameError, setItemNameError] = useState('')
   const [itemPriceError, setItemPriceError] = useState('')
   const [itemQuantityError, setItemQuantityError] = useState('')
-
 
   const { allPeople, items, setItems } = props
 
@@ -94,49 +89,31 @@ const ItemizedBill = (props: ItemizedBillProps) => {
     setOpenAddItem(false)
   }
 
+  const setItem = (item: Item) => {
+    const index = items.findIndex((i) => i.title === item.title)
+    setItems((prev) => {
+      const newItems = [...prev]
+      newItems[index] = item
+      return newItems
+    })
+  }
+
   return (
     <List sx={{ paddingBottom: 0 }}>
-      {items.map((item, index) => (
+      {items.map((item) => (
         <>
           <ListItem
             secondaryAction={
-              <IconButton edge='end' onClick={() => handleDeleteItem(itemName)}>
+              <IconButton edge='end' onClick={() => handleDeleteItem(item.title)}>
                 <DeleteIcon />
               </IconButton>
             }
           >
-            <Grid container>
-              <Grid item xs={6}>
-                <Box display='flex' flexDirection='column'>
-                  <Typography variant='body1' fontSize={20} fontWeight='bold'>
-                    {item.title}
-                  </Typography>
-                  <Typography variant='button'>
-                    ${item.price.toFixed(2)}
-                  </Typography>
-                  <Typography variant='body1' fontSize={12}>
-                    QTY: {item.quantity}
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={6}>
-                <Box border='1px dashed' height='100%' borderRadius={1} display='flex' justifyContent='center' alignItems='center'>
-                  <IconButton onClick={() => {
-                    setSelectedItemIndex(index)
-                    setOpenAddPerson(true)
-                  }}>
-                    <AddIcon />
-                  </IconButton>
-                </Box>
-              </Grid>
-            </Grid>
+            <BillItem item={item} setItem={setItem} allPeople={allPeople} />
           </ListItem>
           <Divider />
         </>
       ))}
-      {selectedItemIndex}
-      {' '}
-      {JSON.stringify(items)}
       <ListItem>
         <Button fullWidth onClick={() => setOpenAddItem(true)}>
           Add Item
@@ -199,46 +176,6 @@ const ItemizedBill = (props: ItemizedBillProps) => {
               </Box>
             </Stack>
           </form>
-        </Box>
-      </Dialog>
-      <Dialog open={openAddPerson} onClose={() => setOpenAddPerson(false)} fullWidth>
-        <Box px={2} py={2}>
-          <Stack spacing={1}>
-            <Box textAlign='center'>
-              <Typography variant='h2' fontSize={28}>
-                Add Contributions
-              </Typography>
-            </Box>
-            <Divider />
-            <Box display='flex' justifyContent='center' flexDirection='column' textAlign='center'>
-              <Typography variant='body1' fontSize={24} fontWeight='bold'>
-                {selectedItemIndex && items[selectedItemIndex]?.title}
-              </Typography>
-              <Box display='flex' gap={1} justifyContent='center' textAlign='center'>
-                <Typography variant='button' fontSize={16}>
-                  $ {selectedItemIndex && items[selectedItemIndex].price.toFixed(2)}
-                </Typography>
-                <Typography variant='button' fontSize={16}>
-                  (QTY: {selectedItemIndex && items[selectedItemIndex].quantity})
-                </Typography>
-              </Box>
-            </Box>
-            <Divider />
-            <Box>
-              {allPeople.map((person) => (
-                <Chip
-                  key={person.name}
-                  label={person.name}
-                  icon={<FaceIcon />}
-                  color={selectedItemIndex && items[selectedItemIndex]?.contributed.some(p => p.name === person.name) ? 'primary' : 'default'}
-                  onClick={() => {
-
-                  }}
-                  sx={{ m: 0.5 }}
-                />
-                ))}
-            </Box>
-          </Stack>
         </Box>
       </Dialog>
     </List>

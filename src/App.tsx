@@ -30,6 +30,18 @@ const App = () => {
   const [people, setPeople] = useState<Person[]>([]);
   const [items, setItems] = useState<Item[]>([]);
 
+  const handleAddPerson = (name: string) => {
+    setPeople([...people, { name }]);
+  }
+
+  const handleDeletePerson = (person: Person) => {
+    setPeople(people.filter((person2) => person2.name !== person.name));
+    setItems(items.map((item) => {
+      const newContributed = item.contributed.filter(p => p.name !== person.name)
+      return { ...item, contributed: newContributed }
+    }))
+  }
+
   return (
     <Root>
       <Grid container spacing={2} className={classes.gridContainer} sx={{ pt: { xs: 1, md: 10 }, px: { xs: 2, md: 5 } }}>
@@ -46,7 +58,7 @@ const App = () => {
         {/* Add users */}
         <Grid item xs={12} lg={4} className={classes.gridItem}>
           <Paper className={classes.gridItemPaper}>
-            <UserList people={people} setPeople={setPeople} />
+            <UserList people={people} handleAddPerson={handleAddPerson} handleDeletePerson={handleDeletePerson} />
           </Paper>
         </Grid>
 

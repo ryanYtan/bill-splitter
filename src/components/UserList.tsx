@@ -8,11 +8,12 @@ import React, { useState } from 'react'
 
 export interface UserListProps {
   people: Person[]
-  setPeople: React.Dispatch<React.SetStateAction<Person[]>>
+  handleAddPerson: (name: string) => void
+  handleDeletePerson: (person: Person) => void
 }
 
 const UserList = (props: UserListProps) => {
-  const { people, setPeople } = props
+  const { people, handleAddPerson, handleDeletePerson } = props
   const [name, setName] = useState('')
   const [error, setError] = useState('')
 
@@ -29,11 +30,7 @@ const UserList = (props: UserListProps) => {
     validateName(e.target.value)
   }
 
-  const handleDeletePerson = (person: Person) => {
-    setPeople(people.filter((person2) => person2.name !== person.name));
-  }
-
-  const handleAddPerson: React.FormEventHandler<HTMLFormElement> = e => {
+  const addPerson: React.FormEventHandler<HTMLFormElement> = e => {
     e.preventDefault()
     if (!name) {
       setError('Name is required')
@@ -43,7 +40,7 @@ const UserList = (props: UserListProps) => {
       setError('Name already exists')
       return
     }
-    setPeople([...people, { name: name as string }]);
+    handleAddPerson(name as string)
     setName('')
     setError('')
   }
@@ -64,7 +61,7 @@ const UserList = (props: UserListProps) => {
         ))}
       </Box>
       <Box px={1}>
-        <form onSubmit={handleAddPerson}>
+        <form onSubmit={addPerson}>
           <TextField
             fullWidth
             name='name'
