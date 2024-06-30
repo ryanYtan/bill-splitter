@@ -1,13 +1,9 @@
-import React, { useRef, useState } from 'react'
-import { Person } from '../types/Person'
-import { Item } from '../types/Item'
+import React, { useState } from 'react'
 import {
   Box,
   Button,
-  Chip,
   Dialog,
   Divider,
-  Grid,
   IconButton,
   InputAdornment,
   List,
@@ -18,14 +14,21 @@ import {
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import BillItem from './BillItem'
+import {Item, User} from "../hooks/useBill";
 
 export interface ItemizedBillProps {
-  allPeople: Person[]
+  users: User[]
   items: Item[]
-  setItems: React.Dispatch<React.SetStateAction<Item[]>>
+  addItem: (title: string, price: number, quantity: number) => void
+  deleteItem: (item: Item) => void
+  getUsersForItem: (item: Item) => User[]
+  addUserToItem: (user: User, item: Item) => void
+  removeUserFromItem: (user: User, item: Item) => void
 }
 
 const ItemizedBill = (props: ItemizedBillProps) => {
+  const { users, items, addItem, deleteItem, addUserToItem, getUsersForItem, removeUserFromItem } = props
+
   const [openAddItem, setOpenAddItem] = useState(false)
 
   //form values
@@ -35,12 +38,6 @@ const ItemizedBill = (props: ItemizedBillProps) => {
   const [itemNameError, setItemNameError] = useState('')
   const [itemPriceError, setItemPriceError] = useState('')
   const [itemQuantityError, setItemQuantityError] = useState('')
-
-  const { allPeople, items, setItems } = props
-
-  const handleDeleteItem = (itemName: string) => {
-    setItems(items.filter((item) => item.title !== itemName))
-  }
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = e => {
     e.preventDefault()
@@ -82,20 +79,11 @@ const ItemizedBill = (props: ItemizedBillProps) => {
     if (error) {
       return
     }
-    setItems(prev => [...prev, { title: name, price, quantity, contributed: [] }])
+    addItem(name, price, quantity)
     setItemName('')
     setItemPrice('0')
     setItemQuantity('1')
     setOpenAddItem(false)
-  }
-
-  const setItem = (item: Item) => {
-    const index = items.findIndex((i) => i.title === item.title)
-    setItems((prev) => {
-      const newItems = [...prev]
-      newItems[index] = item
-      return newItems
-    })
   }
 
   return (
@@ -104,16 +92,22 @@ const ItemizedBill = (props: ItemizedBillProps) => {
         <>
           <ListItem
             secondaryAction={
-              <IconButton edge='end' onClick={() => handleDeleteItem(item.title)}>
+              <IconButton edge='end' onClick={() => deleteItem(item)}>
                 <DeleteIcon />
               </IconButton>
             }
           >
-            <BillItem item={item} setItem={setItem} allPeople={allPeople} />
+            <BillItem item={item} users={users}  addUserToItem={addUserToItem} getUsersForItem={getUsersForItem} removeUserFromItem={removeUserFromItem} />
           </ListItem>
           <Divider />
         </>
       ))}
+      <ListItem sx={{ textAlign: 'right' }}>
+        <Typography variant='button'>
+          <b>Total Bill:</b>{' '}${items.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}
+        </Typography>
+      </ListItem>
+      <Divider />
       <ListItem>
         <Button fullWidth onClick={() => setOpenAddItem(true)}>
           Add Item

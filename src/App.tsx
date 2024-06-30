@@ -1,10 +1,10 @@
-import { Alert, Grid, Paper, Typography } from '@mui/material'
-import { useState } from 'react'
-import { Person } from './types/Person'
-import { Item } from './types/Item'
+import {Alert, Box, Grid, Paper, Typography} from '@mui/material'
 import UserList from './components/UserList';
 import ItemizedBill from './components/ItemizedBill';
 import styled from '@emotion/styled';
+import useBill from "./hooks/useBill";
+import React from "react";
+import WhoPaid from "./components/WhoPaid";
 
 const PREFIX = 'App'
 const classes = {
@@ -27,20 +27,7 @@ const Root = styled('div')({
 })
 
 const App = () => {
-  const [people, setPeople] = useState<Person[]>([]);
-  const [items, setItems] = useState<Item[]>([]);
-
-  const handleAddPerson = (name: string) => {
-    setPeople([...people, { name }]);
-  }
-
-  const handleDeletePerson = (person: Person) => {
-    setPeople(people.filter((person2) => person2.name !== person.name));
-    setItems(items.map((item) => {
-      const newContributed = item.contributed.filter(p => p.name !== person.name)
-      return { ...item, contributed: newContributed }
-    }))
-  }
+  const { users, addUser, deleteUser, hasUser, items, addItem, deleteItem, getUsersForItem, removeUserFromItem, addUserToItem, whoPaid, selectWhoPaid } = useBill()
 
   return (
     <Root>
@@ -48,30 +35,38 @@ const App = () => {
 
         {/* Header */}
         <Grid item xs={12}>
-          <Alert icon={false} sx={{ display: 'block', textAlign: 'center' }}>
-            <Typography variant='h1' fontSize={24}>
+          <Box mt={2} textAlign='center'>
+            <Typography variant='h1' fontSize={24} fontWeight='bold'>
               Simple Bill Splitter
             </Typography>
-          </Alert>
+          </Box>
         </Grid>
 
         {/* Add users */}
         <Grid item xs={12} lg={4} className={classes.gridItem}>
           <Paper className={classes.gridItemPaper}>
-            <UserList people={people} handleAddPerson={handleAddPerson} handleDeletePerson={handleDeletePerson} />
+            <UserList users={users} addUser={addUser} deleteUser={deleteUser} hasUser={hasUser} />
           </Paper>
         </Grid>
 
         <Grid item xs={12} lg={4} className={classes.gridItem}>
           <Paper className={classes.gridItemPaper}>
-            <ItemizedBill allPeople={people} items={items} setItems={setItems} />
+            <ItemizedBill
+              users={users}
+              addItem={addItem}
+              deleteItem={deleteItem}
+              items={items}
+              getUsersForItem={getUsersForItem}
+              removeUserFromItem={removeUserFromItem}
+              addUserToItem={addUserToItem}
+            />
           </Paper>
         </Grid>
         <Grid item xs={12} lg={4} className={classes.gridItem}>
           <Paper className={classes.gridItemPaper}>
+            <WhoPaid users={users} whoPaid={whoPaid} selectWhoPaid={selectWhoPaid} />
           </Paper>
         </Grid>
-
       </Grid>
     </Root>
   );

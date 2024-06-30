@@ -1,24 +1,23 @@
-import { Autocomplete, Box, Button, Chip, Divider, IconButton, List, ListItem, ListItemIcon, ListItemText, Stack, TextField } from '@mui/material'
-import { Person } from '../types/Person'
-import AccountCircleIcon from '@mui/icons-material/AccountCircle'
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete'
+import { Box, Chip, Stack, TextField } from '@mui/material'
 import FaceIcon from '@mui/icons-material/Face';
 import React, { useState } from 'react'
+import {User} from "../hooks/useBill";
 
 export interface UserListProps {
-  people: Person[]
-  handleAddPerson: (name: string) => void
-  handleDeletePerson: (person: Person) => void
+  users: User[]
+  addUser: (name: string) => void
+  deleteUser: (user: User) => void
+  hasUser: (name: string) => boolean
 }
 
 const UserList = (props: UserListProps) => {
-  const { people, handleAddPerson, handleDeletePerson } = props
+  const { users, addUser, deleteUser, hasUser } = props
+
   const [name, setName] = useState('')
   const [error, setError] = useState('')
 
   const validateName = (name: string) => {
-    if (people.find((person) => person.name === name)) {
+    if (users.find((person) => person.name === name)) {
       setError('Name already exists')
     } else {
       setError('')
@@ -36,11 +35,11 @@ const UserList = (props: UserListProps) => {
       setError('Name is required')
       return
     }
-    if (people.find((person) => person.name === name)) {
+    if (users.find((person) => person.name === name)) {
       setError('Name already exists')
       return
     }
-    handleAddPerson(name as string)
+    addUser(name as string)
     setName('')
     setError('')
   }
@@ -48,14 +47,14 @@ const UserList = (props: UserListProps) => {
   return (
     <Stack px={1} py={1} spacing={2}>
       <Box>
-        {people.map((person) => (
+        {users.map((user) => (
           <Chip
-            key={person.name}
-            label={person.name}
+            key={user.id}
+            label={user.name}
             icon={<FaceIcon />}
             size='small'
             variant='outlined'
-            onDelete={() => handleDeletePerson(person)}
+            onDelete={() => deleteUser(user)}
             sx={{ m: 0.5 }}
           />
         ))}

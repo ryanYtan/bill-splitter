@@ -1,28 +1,32 @@
 import { Box, Chip, Dialog, Divider, Grid, IconButton, Stack, Typography } from "@mui/material"
-import { Item } from "../types/Item"
-import { Person } from "../types/Person"
 import React, { useState } from "react"
 import AddIcon from '@mui/icons-material/Add'
 import FaceIcon from "@mui/icons-material/Face";
+import {Item, User} from "../hooks/useBill";
 
 export interface BillItemProps {
+  users: User[]
   item: Item
-  setItem: (item: Item) => void
-  allPeople: Person[]
+  getUsersForItem: (item: Item) => User[]
+  addUserToItem: (user: User, item: Item) => void
+  removeUserFromItem: (user: User, item: Item) => void
 }
 
 const BillItem = (props: BillItemProps) => {
-  const { item, setItem, allPeople } = props
+  const { users, item, getUsersForItem, addUserToItem, removeUserFromItem } = props
 
   const [openAddPerson, setOpenAddPerson] = useState(false)
 
-  const itemHasPerson = (person: Person) => {
-    return item.contributed.some(p => p.name === person.name)
+  const itemHasUser = (user: User) => {
+    return getUsersForItem(item).find((itemUser) => itemUser.id === user.id) !== undefined
   }
 
-  const handleDeletePerson = (person: Person) => {
-    const newContributed = item.contributed.filter(p => p.name !== person.name)
-    setItem({ ...item, contributed: newContributed })
+  const handleToggleUserInItem = (user: User) => {
+    if (itemHasUser(user)) {
+      removeUserFromItem(user, item)
+    } else {
+      addUserToItem(user, item)
+    }
   }
 
   return (
@@ -42,15 +46,15 @@ const BillItem = (props: BillItemProps) => {
           </Box>
         </Grid>
         <Grid item xs={6}>
-          {item.contributed.map((person) => (
+          {getUsersForItem(item).map((user) => (
             <Chip
-              key={person.name}
-              label={person.name}
+              key={user.id}
+              label={user.name}
               icon={<FaceIcon />}
               color='primary'
               size='small'
               sx={{ m: 0.5 }}
-              onDelete={() => handleDeletePerson(person)}
+              onDelete={() => removeUserFromItem(user, item)}
             />
           ))}
           <Chip
@@ -69,6 +73,9 @@ const BillItem = (props: BillItemProps) => {
               <Typography variant='h2' fontSize={28}>
                 Add Contributions
               </Typography>
+              <Typography variant='caption'>
+                Cost is split equally amongst contributors
+              </Typography>
             </Box>
             <Divider />
             <Box display='flex' justifyContent='center' flexDirection='column' textAlign='center'>
@@ -86,23 +93,13 @@ const BillItem = (props: BillItemProps) => {
             </Box>
             <Divider />
             <Box>
-              {allPeople.map((person) => (
+              {users.map((user) => (
                 <Chip
-                  key={person.name}
-                  label={person.name}
+                  key={user.id}
+                  label={user.name}
                   icon={<FaceIcon />}
-                  color={itemHasPerson(person) ? 'primary' : 'default'}
-                  onClick={() => {
-                    if (itemHasPerson(person)) {
-                      //remove
-                      const newContributed = item.contributed.filter(p => p.name !== person.name)
-                      setItem({ ...item, contributed: newContributed })
-                    } else {
-                      //add
-                      const newContributed = [...item.contributed, person]
-                      setItem({ ...item, contributed: newContributed })
-                    }
-                  }}
+                  color={itemHasUser(user) ? 'primary' : 'default'}
+                  onClick={() => handleToggleUserInItem(user)}
                   sx={{ m: 0.5 }}
                 />
                 ))}
