@@ -1,70 +1,71 @@
 import {Bill} from "../hooks/useBill";
-import React, {useState} from "react";
-import {Box, Button, Chip, Dialog, Divider, Paper, Stack, Typography} from "@mui/material";
-import FaceIcon from "@mui/icons-material/Face";
+import {Box, Stack, Typography} from "@mui/material";
+import React from "react";
 
 interface ComputedBillProps {
   bill: Bill
 }
 
 const ComputedBill = (props: ComputedBillProps) => {
-  const [open, setOpen] = useState(false)
   const { bill } = props
 
+  const lines: string[] = (() => {
+    let ret: string[] = []
+    ret.push('===== COMPUTED SUMMARY =====')
+    ret.push(`## Total Contributors: ${bill.users.length}`)
+    ret.push(`## Total Items: ${bill.items.length}`)
+    ret.push(`## Paid By: ${bill.whoPaid?.name}`)
+    ret.push('')
+
+    //first check if there are users that are not assigned to any items
+    const unassignedUsers = bill.users.filter(user => bill.items.every(item => !bill.userHasItem(user, item)))
+    if (unassignedUsers.length > 0) {
+      for (const user of unassignedUsers) {
+        ret.push(`WARNING: ${user.name} has not contributed to any part of the bill`)
+      }
+      ret.push('')
+    }
+
+    //then check if there are items that are not assigned to any users
+    const unassignedItems = bill.items.filter(item => bill.getUsersForItem(item).length === 0)
+    if (unassignedItems.length > 0) {
+      for (const item of unassignedItems) {
+        ret.push(`WARNING: ${item.title} has not been assigned to any person`)
+      }
+      ret.push('')
+    }
+
+    const whoOwesWho = bill.whoOwesWho()
+    for (const result of whoOwesWho) {
+      const owed = result.amount
+      if (bill.whoPaid && result.payer.id === bill.whoPaid.id) {
+        ret.push(`${result.payer.name} paid for everyone.`)
+        ret.push(`Contributed $${owed.toFixed(2)}.`)
+        ret.push(`($${(owed * bill.getTaxMultiplier()).toFixed(2)} after tax)`)
+        ret.push('')
+      } else {
+        ret.push(`${result.payer.name} owes ${result.payee.name} $${result.amount.toFixed(2)}`)
+        ret.push(`($${(owed * bill.getTaxMultiplier()).toFixed(2)} after tax)`)
+        ret.push('')
+      }
+    }
+    ret.push('')
+    ret.push(`Subtotal:          $${bill.computeSubTotalPrice().toFixed(2)}`)
+    ret.push(`Tax:               $${(bill.computeTotalPrice() - bill.computeSubTotalPrice()).toFixed(2)}`)
+    ret.push(`Total (after tax): $${bill.computeTotalPrice().toFixed(2)}`)
+    return ret
+  })()
+
   return (
-    <>
-      <Box width='100%'>
-        <Button fullWidth variant='contained' onClick={() => setOpen(true)}>
-          Compute Bill
-        </Button>
-      </Box>
-      <Dialog open={open} fullWidth maxWidth='xl'>
-        <Stack p={2} spacing={1}>
-          <Typography variant='h3' fontSize={20}>
-            Contributors
-          </Typography>
-          <Box>
-            {bill.users.map((user) => (
-              <Chip
-                key={user.id}
-                label={user.name}
-                icon={<FaceIcon />}
-                size='small'
-                variant='outlined'
-                sx={{ m: 0.5 }}
-              />
-            ))}
-          </Box>
-          <Divider />
-          <Typography variant='h3' fontSize={20}>
-            Items
-          </Typography>
-          <Box display='flex' flexDirection='column'>
-            {bill.items.map((item) => (
-              <Typography variant='body1'>
-                {item.title} - ${item.price.toFixed(2)} x {item.quantity} = ${(item.price * item.quantity).toFixed(2)}
-              </Typography>
-            ))}
-            <Typography>
-              Total: ${bill.items.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}
-            </Typography>
-          </Box>
-          <Divider />
-          <Typography variant='h3' fontSize={20}>
-            Taxes
-          </Typography>
-          <Box display='flex' flexDirection='column'>
-            {bill.taxes.map((tax) => (
-              <Typography variant='body1'>
-                {tax.title} - {tax.percentage}%
-              </Typography>
-            ))}
-          </Box>
-          <Divider />
-        </Stack>
-      </Dialog>
-    </>
+    <Stack p={2} spacing={1} sx={{ fontFamily: 'monospace' }}>
+      <pre>
+        {lines.map((line, index) => (
+          <>{line}{'\n'}</>
+        ))}
+      </pre>
+    </Stack>
   )
 }
+
 
 export default ComputedBill

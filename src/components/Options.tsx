@@ -28,39 +28,6 @@ const Options = (props: OptionsProps) => {
   return (
     <Root>
       <List>
-        {bill.taxes && bill.taxes.map((tax, index) => (
-          <>
-            <ListItem
-              secondaryAction={
-                <Checkbox
-                  checked={tax.isApplied}
-                  onChange={() => bill.setTax({ ...tax, isApplied: !tax.isApplied })}
-                />
-              }
-            >
-              <Stack direction='row' spacing={1} alignItems='center'>
-                <Typography variant='button'>
-                  Apply
-                </Typography>
-                <TextField
-                  value={tax.percentage}
-                  onChange={(e) => bill.setTax({ ...tax, percentage: Number(e.target.value) })}
-                  variant='standard'
-                  InputProps={{
-                    endAdornment: <Typography variant='button'>%</Typography>
-                  }}
-                  sx={{
-                    width: 40,
-                  }}
-                />
-                <Typography variant='button'>
-                  {tax.title}
-                </Typography>
-              </Stack>
-            </ListItem>
-            {index < bill.taxes.length - 1 && <Divider />}
-          </>
-        ))}
       </List>
     </Root>
   )

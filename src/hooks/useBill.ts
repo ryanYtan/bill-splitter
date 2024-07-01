@@ -24,6 +24,12 @@ export interface Tax {
   isApplied: boolean
 }
 
+export interface BillResult {
+  payer: User
+  payee: User
+  amount: number
+}
+
 export interface Bill {
   users: User[]
 
@@ -46,6 +52,14 @@ export interface Bill {
   addTax: (title: string, percentage: number) => void
   deleteTax: (tax: Tax) => void
   setTax: (tax: Tax) => void
+  getTaxMultiplier: () => number
+
+  computeSubTotalPrice: () => number
+  computeTotalPrice: () => number
+
+  isReadyToComputeBill: () => boolean
+
+  whoOwesWho: () => BillResult[]
 }
 
 const useBill = (): Bill => {
@@ -126,6 +140,45 @@ const useBill = (): Bill => {
     setTaxes(newTaxes)
   }
 
+  const getTaxMultiplier = () => {
+    const percentage = taxes.reduce((acc, tax) => acc + (tax.isApplied ? tax.percentage : 0), 0)
+    return 1 + (percentage / 100)
+  }
+
+  const computeSubTotalPrice = () => {
+    return items.reduce((acc, item) => acc + item.price * item.quantity, 0)
+  }
+
+  const computeTotalPrice = () => {
+    const totalPriceBeforeTax = computeSubTotalPrice()
+    const taxMultiplier = getTaxMultiplier()
+    return totalPriceBeforeTax * taxMultiplier
+  }
+
+  const isReadyToComputeBill = () => {
+    return users.length > 0 && items.length > 0 && whoPaid !== null
+  }
+
+  const whoOwesWho = (): BillResult[] => {
+    let results: BillResult[] = users.map(u => ({ payer: u, payee: whoPaid!, amount: 0 }))
+
+    //compute the total amount paid by each user
+    for (const userItem of userItems) {
+      const user = userItem.user
+      const item = userItem.item
+      const pricePaidByUser = item.price * item.quantity / getUsersForItem(item).length
+      results = results.map(result => {
+        if (result.payer.id === user.id) {
+          return { ...result, amount: result.amount + pricePaidByUser }
+        } else {
+          return result
+        }
+      })
+    }
+
+    return results
+  }
+
   return {
     users,
     addUser,
@@ -144,6 +197,11 @@ const useBill = (): Bill => {
     addTax,
     deleteTax,
     setTax,
+    getTaxMultiplier,
+    computeSubTotalPrice,
+    computeTotalPrice,
+    isReadyToComputeBill,
+    whoOwesWho,
   }
 }
 

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import {
   Box,
-  Button,
+  Button, Checkbox,
   Dialog,
   Divider,
   IconButton,
@@ -9,12 +9,13 @@ import {
   List,
   ListItem,
   Stack,
-  TextField,
+  TextField, Tooltip,
   Typography
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import BillItem from './BillItem'
 import {Bill} from "../hooks/useBill";
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 export interface ItemizedBillProps {
   bill: Bill
@@ -96,9 +97,55 @@ const ItemizedBill = (props: ItemizedBillProps) => {
           <Divider />
         </>
       ))}
-      <ListItem>
+      {bill.taxes && bill.taxes.map((tax, index) => (
+        <>
+          <ListItem
+            secondaryAction={
+              <Checkbox
+                checked={tax.isApplied}
+                onChange={() => bill.setTax({ ...tax, isApplied: !tax.isApplied })}
+              />
+            }
+          >
+            <Stack direction='row' spacing={1} alignItems='center'>
+              <Typography variant='button'>
+                Apply
+              </Typography>
+              <TextField
+                value={tax.percentage}
+                onChange={(e) => bill.setTax({ ...tax, percentage: Number(e.target.value) })}
+                variant='standard'
+                InputProps={{
+                  endAdornment: <Typography variant='button'>%</Typography>
+                }}
+                sx={{
+                  width: 40,
+                }}
+              />
+              <Typography variant='button'>
+                {tax.title}
+              </Typography>
+            </Stack>
+          </ListItem>
+          {index < bill.taxes.length - 1 && <Divider />}
+        </>
+      ))}
+      <Divider />
+      <ListItem sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+        <Tooltip title='Total before taxes'>
+          <InfoOutlinedIcon sx={{ fontSize: 12 }}/>
+        </Tooltip>
         <Typography variant='button'>
-          <b>Total Bill:</b>{' '}${bill.items.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}
+          <b>Subtotal:</b>{' '}${bill.computeSubTotalPrice().toFixed(2)}
+        </Typography>
+      </ListItem>
+      <Divider />
+      <ListItem sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+        <Tooltip title='Total after taxes'>
+          <InfoOutlinedIcon sx={{ fontSize: 12 }}/>
+        </Tooltip>
+        <Typography variant='button'>
+          <b>Total:</b>{' '}${bill.computeTotalPrice().toFixed(2)}
         </Typography>
       </ListItem>
       <Divider />
