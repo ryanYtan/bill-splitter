@@ -2,30 +2,27 @@ import { Box, Chip, Dialog, Divider, Grid, IconButton, Stack, Typography } from 
 import React, { useState } from "react"
 import AddIcon from '@mui/icons-material/Add'
 import FaceIcon from "@mui/icons-material/Face";
-import {Item, User} from "../hooks/useBill";
+import {Bill, Item, User} from "../hooks/useBill";
 
 export interface BillItemProps {
-  users: User[]
+  bill: Bill
   item: Item
-  getUsersForItem: (item: Item) => User[]
-  addUserToItem: (user: User, item: Item) => void
-  removeUserFromItem: (user: User, item: Item) => void
 }
 
 const BillItem = (props: BillItemProps) => {
-  const { users, item, getUsersForItem, addUserToItem, removeUserFromItem } = props
+  const { bill, item } = props
 
   const [openAddPerson, setOpenAddPerson] = useState(false)
 
   const itemHasUser = (user: User) => {
-    return getUsersForItem(item).find((itemUser) => itemUser.id === user.id) !== undefined
+    return bill.getUsersForItem(item).find((itemUser) => itemUser.id === user.id) !== undefined
   }
 
   const handleToggleUserInItem = (user: User) => {
     if (itemHasUser(user)) {
-      removeUserFromItem(user, item)
+      bill.removeUserFromItem(user, item)
     } else {
-      addUserToItem(user, item)
+      bill.addUserToItem(user, item)
     }
   }
 
@@ -38,7 +35,7 @@ const BillItem = (props: BillItemProps) => {
               {item.title}
             </Typography>
             <Typography variant='button'>
-              ${item.price.toFixed(2)}
+              ${item.price.toFixed(2)}{' '} ea
             </Typography>
             <Typography variant='body1' fontSize={12}>
               QTY: {item.quantity}
@@ -46,7 +43,7 @@ const BillItem = (props: BillItemProps) => {
           </Box>
         </Grid>
         <Grid item xs={6}>
-          {getUsersForItem(item).map((user) => (
+          {bill.getUsersForItem(item).map((user) => (
             <Chip
               key={user.id}
               label={user.name}
@@ -54,7 +51,7 @@ const BillItem = (props: BillItemProps) => {
               color='primary'
               size='small'
               sx={{ m: 0.5 }}
-              onDelete={() => removeUserFromItem(user, item)}
+              onDelete={() => bill.removeUserFromItem(user, item)}
             />
           ))}
           <Chip
@@ -93,7 +90,7 @@ const BillItem = (props: BillItemProps) => {
             </Box>
             <Divider />
             <Box>
-              {users.map((user) => (
+              {bill.users.map((user) => (
                 <Chip
                   key={user.id}
                   label={user.name}

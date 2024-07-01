@@ -1,27 +1,36 @@
 import {useState} from "react";
 
-export type User = {
+export interface User {
   id: number
   name: string
 }
 
-export type Item = {
+export interface Item {
   id: number
   title: string
   price: number
   quantity: number
 }
 
-export type UserItem = {
+export interface UserItem {
   user: User
   item: Item
 }
 
-export interface UseBillObject {
+export interface Tax {
+  id: number
+  title: string
+  percentage: number
+  isApplied: boolean
+}
+
+export interface Bill {
   users: User[]
+
   addUser: (name: string) => void
   deleteUser: (user: User) => void
   hasUser: (name: string) => boolean
+
   items: Item[]
   addItem: (title: string, price: number, quantity: number) => void
   deleteItem: (item: Item) => void
@@ -29,16 +38,26 @@ export interface UseBillObject {
   getUsersForItem: (item: Item) => User[]
   addUserToItem: (user: User, item: Item) => void
   removeUserFromItem: (user: User, item: Item) => void
+
   whoPaid: User | null
   selectWhoPaid: (user: User) => void
+
+  taxes: Tax[]
+  addTax: (title: string, percentage: number) => void
+  deleteTax: (tax: Tax) => void
+  setTax: (tax: Tax) => void
 }
 
-const useBill = (): UseBillObject => {
+const useBill = (): Bill => {
   const [id, setId] = useState(0)
   const [users, setUsers] = useState<User[]>([])
   const [items, setItems] = useState<Item[]>([])
   const [userItems, setUserItems] = useState<UserItem[]>([]) //modelling many-to-many
   const [whoPaid, setWhoPaid] = useState<User | null>(null) //who paid for the bill
+  const [taxes, setTaxes] = useState<Tax[]>([
+    { id: 0, title: 'GST', percentage: 9, isApplied: true },
+    { id: 1, title: 'Service Charge', percentage: 10, isApplied: true },
+  ])
 
   const addUser = (name: string) => {
     setUsers([...users, { id: id, name: name }]);
@@ -65,7 +84,7 @@ const useBill = (): UseBillObject => {
   }
 
   const deleteItem = (item: Item) => {
-    const newItems = items.filter((item) => item.id !== item.id)
+    const newItems = items.filter((i) => i.id !== item.id)
     const newUserItems = userItems.filter((userItem) => userItem.item.id !== item.id)
     setItems(newItems)
     setUserItems(newUserItems)
@@ -92,6 +111,21 @@ const useBill = (): UseBillObject => {
     setWhoPaid(user)
   }
 
+  const addTax = (title: string, percentage: number) => {
+    setTaxes([...taxes, { id: id, title: title, percentage: percentage, isApplied: true }]);
+    setId(id + 1)
+  }
+
+  const deleteTax = (tax: Tax) => {
+    const newTaxes = taxes.filter((t) => t.id !== tax.id)
+    setTaxes(newTaxes)
+  }
+
+  const setTax = (tax: Tax) => {
+    const newTaxes = taxes.map((t) => t.id === tax.id ? tax : t)
+    setTaxes(newTaxes)
+  }
+
   return {
     users,
     addUser,
@@ -105,7 +139,11 @@ const useBill = (): UseBillObject => {
     addUserToItem,
     removeUserFromItem,
     whoPaid,
-    selectWhoPaid
+    selectWhoPaid,
+    taxes,
+    addTax,
+    deleteTax,
+    setTax,
   }
 }
 

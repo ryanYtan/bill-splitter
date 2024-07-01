@@ -14,20 +14,14 @@ import {
 } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import BillItem from './BillItem'
-import {Item, User} from "../hooks/useBill";
+import {Bill} from "../hooks/useBill";
 
 export interface ItemizedBillProps {
-  users: User[]
-  items: Item[]
-  addItem: (title: string, price: number, quantity: number) => void
-  deleteItem: (item: Item) => void
-  getUsersForItem: (item: Item) => User[]
-  addUserToItem: (user: User, item: Item) => void
-  removeUserFromItem: (user: User, item: Item) => void
+  bill: Bill
 }
 
 const ItemizedBill = (props: ItemizedBillProps) => {
-  const { users, items, addItem, deleteItem, addUserToItem, getUsersForItem, removeUserFromItem } = props
+  const { bill } = props
 
   const [openAddItem, setOpenAddItem] = useState(false)
 
@@ -46,7 +40,7 @@ const ItemizedBill = (props: ItemizedBillProps) => {
     if (!itemName) {
       error = true
       setItemNameError('Item name is required')
-    } else if (items.find((item) => item.title === itemName)) {
+    } else if (bill.items.find((item) => item.title === itemName)) {
       error = true
       setItemNameError('Item already exists')
     }
@@ -79,7 +73,7 @@ const ItemizedBill = (props: ItemizedBillProps) => {
     if (error) {
       return
     }
-    addItem(name, price, quantity)
+    bill.addItem(name, price, quantity)
     setItemName('')
     setItemPrice('0')
     setItemQuantity('1')
@@ -88,23 +82,23 @@ const ItemizedBill = (props: ItemizedBillProps) => {
 
   return (
     <List sx={{ paddingBottom: 0 }}>
-      {items.map((item) => (
+      {bill.items.map((item) => (
         <>
           <ListItem
             secondaryAction={
-              <IconButton edge='end' onClick={() => deleteItem(item)}>
+              <IconButton edge='end' onClick={() => bill.deleteItem(item)}>
                 <DeleteIcon />
               </IconButton>
             }
           >
-            <BillItem item={item} users={users}  addUserToItem={addUserToItem} getUsersForItem={getUsersForItem} removeUserFromItem={removeUserFromItem} />
+            <BillItem bill={bill} item={item} />
           </ListItem>
           <Divider />
         </>
       ))}
-      <ListItem sx={{ textAlign: 'right' }}>
+      <ListItem>
         <Typography variant='button'>
-          <b>Total Bill:</b>{' '}${items.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}
+          <b>Total Bill:</b>{' '}${bill.items.reduce((acc, item) => acc + item.price * item.quantity, 0).toFixed(2)}
         </Typography>
       </ListItem>
       <Divider />

@@ -5,6 +5,8 @@ import styled from '@emotion/styled';
 import useBill from "./hooks/useBill";
 import React from "react";
 import WhoPaid from "./components/WhoPaid";
+import Options from "./components/Options";
+import ComputedBill from "./components/ComputedBill";
 
 const PREFIX = 'App'
 const classes = {
@@ -27,45 +29,42 @@ const Root = styled('div')({
 })
 
 const App = () => {
-  const { users, addUser, deleteUser, hasUser, items, addItem, deleteItem, getUsersForItem, removeUserFromItem, addUserToItem, whoPaid, selectWhoPaid } = useBill()
+  const bill = useBill()
 
   return (
     <Root>
       <Grid container spacing={2} className={classes.gridContainer} sx={{ pt: { xs: 1, md: 10 }, px: { xs: 2, md: 5 } }}>
-
-        {/* Header */}
-        <Grid item xs={12}>
-          <Box mt={2} textAlign='center'>
-            <Typography variant='h1' fontSize={24} fontWeight='bold'>
-              Simple Bill Splitter
-            </Typography>
-          </Box>
+        <Grid item xs={12} display='flex' justifyContent='center' mt={2} mb={1}>
+          <Typography variant='h1' fontSize={24} fontWeight='bold'>
+            Simple Bill Splitter
+          </Typography>
         </Grid>
 
-        {/* Add users */}
         <Grid item xs={12} lg={4} className={classes.gridItem}>
           <Paper className={classes.gridItemPaper}>
-            <UserList users={users} addUser={addUser} deleteUser={deleteUser} hasUser={hasUser} />
+            <UserList bill={bill} />
           </Paper>
         </Grid>
 
         <Grid item xs={12} lg={4} className={classes.gridItem}>
           <Paper className={classes.gridItemPaper}>
-            <ItemizedBill
-              users={users}
-              addItem={addItem}
-              deleteItem={deleteItem}
-              items={items}
-              getUsersForItem={getUsersForItem}
-              removeUserFromItem={removeUserFromItem}
-              addUserToItem={addUserToItem}
-            />
+            <ItemizedBill bill={bill} />
+          </Paper>
+        </Grid>
+        {bill.users.length > 0 && (
+          <Grid item xs={12} lg={4} className={classes.gridItem}>
+            <Paper className={classes.gridItemPaper}>
+              <WhoPaid bill={bill} />
+            </Paper>
+          </Grid>
+        )}
+        <Grid item xs={12} lg={4} className={classes.gridItem}>
+          <Paper className={classes.gridItemPaper}>
+            <Options bill={bill} />
           </Paper>
         </Grid>
         <Grid item xs={12} lg={4} className={classes.gridItem}>
-          <Paper className={classes.gridItemPaper}>
-            <WhoPaid users={users} whoPaid={whoPaid} selectWhoPaid={selectWhoPaid} />
-          </Paper>
+          <ComputedBill bill={bill} />
         </Grid>
       </Grid>
     </Root>

@@ -1,23 +1,20 @@
 import { Box, Chip, Stack, TextField } from '@mui/material'
 import FaceIcon from '@mui/icons-material/Face';
 import React, { useState } from 'react'
-import {User} from "../hooks/useBill";
+import {Bill} from "../hooks/useBill";
 
 export interface UserListProps {
-  users: User[]
-  addUser: (name: string) => void
-  deleteUser: (user: User) => void
-  hasUser: (name: string) => boolean
+  bill: Bill
 }
 
 const UserList = (props: UserListProps) => {
-  const { users, addUser, deleteUser, hasUser } = props
+  const { bill } = props
 
   const [name, setName] = useState('')
   const [error, setError] = useState('')
 
   const validateName = (name: string) => {
-    if (users.find((person) => person.name === name)) {
+    if (bill.users.find((user) => user.name === name)) {
       setError('Name already exists')
     } else {
       setError('')
@@ -35,11 +32,11 @@ const UserList = (props: UserListProps) => {
       setError('Name is required')
       return
     }
-    if (users.find((person) => person.name === name)) {
+    if (bill.users.find((user) => user.name === name)) {
       setError('Name already exists')
       return
     }
-    addUser(name as string)
+    bill.addUser(name as string)
     setName('')
     setError('')
   }
@@ -47,14 +44,14 @@ const UserList = (props: UserListProps) => {
   return (
     <Stack px={1} py={1} spacing={2}>
       <Box>
-        {users.map((user) => (
+        {bill.users.map((user) => (
           <Chip
             key={user.id}
             label={user.name}
             icon={<FaceIcon />}
             size='small'
             variant='outlined'
-            onDelete={() => deleteUser(user)}
+            onDelete={() => bill.deleteUser(user)}
             sx={{ m: 0.5 }}
           />
         ))}
