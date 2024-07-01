@@ -31,7 +31,7 @@ const BillItem = (props: BillItemProps) => {
       <Grid container>
         <Grid item xs={6}>
           <Box display='flex' flexDirection='column'>
-            <Typography variant='body1' fontSize={20} fontWeight='bold'>
+            <Typography variant='body1' fontSize={16} fontWeight='bold' noWrap>
               {item.title}
             </Typography>
             <Typography variant='button'>
@@ -50,7 +50,7 @@ const BillItem = (props: BillItemProps) => {
               icon={<FaceIcon />}
               color='primary'
               size='small'
-              sx={{ m: 0.5 }}
+              sx={{ m: 0.5, maxWidth: 120 }}
               onDelete={() => bill.removeUserFromItem(user, item)}
             />
           ))}
@@ -63,7 +63,7 @@ const BillItem = (props: BillItemProps) => {
           />
         </Grid>
       </Grid>
-      <Dialog open={openAddPerson} onClose={() => setOpenAddPerson(false)} fullWidth>
+      <Dialog open={openAddPerson} maxWidth='sm' onClose={() => setOpenAddPerson(false)} fullWidth>
         <Box px={2} py={2}>
           <Stack spacing={1}>
             <Box textAlign='center'>
@@ -75,7 +75,7 @@ const BillItem = (props: BillItemProps) => {
               </Typography>
             </Box>
             <Divider />
-            <Box display='flex' justifyContent='center' flexDirection='column' textAlign='center'>
+            <Box display='flex' justifyContent='center' flexDirection='column' textAlign='center' width='100%'>
               <Typography variant='body1' fontSize={24} fontWeight='bold'>
                 {item?.title}
               </Typography>
@@ -97,7 +97,7 @@ const BillItem = (props: BillItemProps) => {
                   icon={<FaceIcon />}
                   color={itemHasUser(user) ? 'primary' : 'default'}
                   onClick={() => handleToggleUserInItem(user)}
-                  sx={{ m: 0.5 }}
+                  sx={{ m: 0.5, maxWidth: 120 }}
                 />
                 ))}
             </Box>
