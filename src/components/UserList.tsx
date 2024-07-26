@@ -2,6 +2,7 @@ import { Box, Chip, Stack, TextField } from '@mui/material'
 import FaceIcon from '@mui/icons-material/Face';
 import React, { useState } from 'react'
 import {Bill} from "../hooks/useBill";
+import UserChip from './generic/UserChip';
 
 export interface UserListProps {
   bill: Bill
@@ -43,16 +44,13 @@ const UserList = (props: UserListProps) => {
 
   return (
     <Stack px={1} py={1} spacing={2}>
-      <Box>
+      <Box display='flex' gap={0.5} flexWrap='wrap' justifyContent='center'>
         {bill.users.map((user) => (
-          <Chip
+          <UserChip
             key={user.id}
             label={user.name}
-            icon={<FaceIcon />}
-            size='small'
-            variant='outlined'
             onDelete={() => bill.deleteUser(user)}
-            sx={{ m: 0.5 }}
+            outlined
           />
         ))}
       </Box>

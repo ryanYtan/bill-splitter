@@ -2,6 +2,7 @@ import {Bill} from "../hooks/useBill";
 import React from "react";
 import {Box, Chip, Stack, Typography} from "@mui/material";
 import FaceIcon from "@mui/icons-material/Face";
+import UserChip from "./generic/UserChip";
 
 export interface WhoPaidProps {
   bill: Bill
@@ -15,16 +16,13 @@ const WhoPaid = (props: WhoPaidProps) => {
       <Typography variant='body1' fontSize={16}>
         Who paid?
       </Typography>
-      <Box>
+      <Box display='flex' gap={0.5} flexWrap='wrap' justifyContent='center'>
         {bill.users.map((user) => (
-          <Chip
+          <UserChip
             key={user.id}
             label={user.name}
-            icon={<FaceIcon />}
-            size='small'
             color={bill.whoPaid && bill.whoPaid.id === user.id ? 'primary' : 'default'}
-            variant='filled'
-            sx={{ m: 0.5 }}
+            filled
             onClick={() => bill.selectWhoPaid(user)}
           />
         ))}

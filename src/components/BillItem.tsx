@@ -3,6 +3,7 @@ import React, { useState } from "react"
 import AddIcon from '@mui/icons-material/Add'
 import FaceIcon from "@mui/icons-material/Face";
 import {Bill, Item, User} from "../hooks/useBill";
+import UserChip from "./generic/UserChip";
 
 export interface BillItemProps {
   bill: Bill
@@ -43,24 +44,22 @@ const BillItem = (props: BillItemProps) => {
           </Box>
         </Grid>
         <Grid item xs={6}>
-          {bill.getUsersForItem(item).map((user) => (
+          <Box display='flex' gap={0.5} flexWrap='wrap'>
+            {bill.getUsersForItem(item).map((user) => (
+              <UserChip
+                key={user.id}
+                label={user.name}
+                color='primary'
+                onDelete={() => bill.removeUserFromItem(user, item)}
+              />
+            ))}
             <Chip
-              key={user.id}
-              label={user.name}
-              icon={<FaceIcon />}
-              color='primary'
+              icon={<AddIcon />}
+              label='Add Person'
+              onClick={() => setOpenAddPerson(true)}
               size='small'
-              sx={{ m: 0.5, maxWidth: 120 }}
-              onDelete={() => bill.removeUserFromItem(user, item)}
             />
-          ))}
-          <Chip
-            icon={<AddIcon />}
-            label='Add Person'
-            onClick={() => setOpenAddPerson(true)}
-            size='small'
-            sx={{ m: 0.5 }}
-          />
+          </Box>
         </Grid>
       </Grid>
       <Dialog open={openAddPerson} maxWidth='sm' onClose={() => setOpenAddPerson(false)} fullWidth>
@@ -89,17 +88,15 @@ const BillItem = (props: BillItemProps) => {
               </Box>
             </Box>
             <Divider />
-            <Box>
+            <Box display='flex' gap={0.5} flexWrap='wrap'>
               {bill.users.map((user) => (
-                <Chip
+                <UserChip
                   key={user.id}
                   label={user.name}
-                  icon={<FaceIcon />}
                   color={itemHasUser(user) ? 'primary' : 'default'}
                   onClick={() => handleToggleUserInItem(user)}
-                  sx={{ m: 0.5, maxWidth: 120 }}
                 />
-                ))}
+              ))}
             </Box>
           </Stack>
         </Box>
