@@ -1,7 +1,5 @@
 import {Bill} from "../hooks/useBill";
-import React from "react";
-import {Box, Chip, Stack, Typography} from "@mui/material";
-import FaceIcon from "@mui/icons-material/Face";
+import {Box, Stack, Typography} from "@mui/material";
 import UserChip from "./generic/UserChip";
 
 export interface WhoPaidProps {

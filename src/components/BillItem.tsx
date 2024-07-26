@@ -1,7 +1,6 @@
-import { Box, Chip, Dialog, Divider, Grid, IconButton, Stack, Typography } from "@mui/material"
-import React, { useState } from "react"
+import { Box, Chip, Dialog, Divider, Grid, Stack, Typography } from "@mui/material"
+import { useState } from "react"
 import AddIcon from '@mui/icons-material/Add'
-import FaceIcon from "@mui/icons-material/Face";
 import {Bill, Item, User} from "../hooks/useBill";
 import UserChip from "./generic/UserChip";
 

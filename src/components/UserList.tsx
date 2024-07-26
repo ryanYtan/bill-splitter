@@ -1,46 +1,54 @@
-import { Box, Chip, Stack, TextField } from '@mui/material'
-import FaceIcon from '@mui/icons-material/Face';
-import React, { useState } from 'react'
-import {Bill} from "../hooks/useBill";
-import UserChip from './generic/UserChip';
+import { Box, Stack, TextField } from '@mui/material'
+import {Bill} from "../hooks/useBill"
+import UserChip from './generic/UserChip'
+import { ERR_MSG_REQUIRED } from './helpers/form'
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
+import * as y from 'yup'
+import { yupResolver } from "@hookform/resolvers/yup"
+import { useEffect, useState } from 'react'
 
 export interface UserListProps {
   bill: Bill
 }
 
+const USER_FORM_SCHEMA = y.object({
+  name: y
+    .string()
+    .default('')
+    .required(ERR_MSG_REQUIRED),
+})
+type UserForm = y.InferType<typeof USER_FORM_SCHEMA>
+
 const UserList = (props: UserListProps) => {
   const { bill } = props
+  const [ isSubmitSuccess, setIsSubmitSuccess ] = useState(false)
 
-  const [name, setName] = useState('')
-  const [error, setError] = useState('')
+  const {
+    control,
+    handleSubmit,
+    setError,
+    reset,
+    formState: { errors },
+  } = useForm<UserForm>({
+    defaultValues: USER_FORM_SCHEMA.getDefault(),
+    resolver: yupResolver(USER_FORM_SCHEMA),
+  })
 
-  const validateName = (name: string) => {
-    if (bill.users.find((user) => user.name === name)) {
-      setError('Name already exists')
-    } else {
-      setError('')
-    }
-  }
-
-  const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setName(e.target.value)
-    validateName(e.target.value)
-  }
-
-  const addPerson: React.FormEventHandler<HTMLFormElement> = e => {
-    e.preventDefault()
-    if (!name) {
-      setError('Name is required')
+  const addPerson: SubmitHandler<UserForm> = (data) => {
+    if (bill.users.find((user) => user.name === data.name)) {
+      setError('name', { type: 'custom', message: 'Name already exists' })
       return
     }
-    if (bill.users.find((user) => user.name === name)) {
-      setError('Name already exists')
-      return
-    }
-    bill.addUser(name as string)
-    setName('')
-    setError('')
+    bill.addUser(data.name)
+    setIsSubmitSuccess(true)
   }
+
+  useEffect(() => {
+    if (isSubmitSuccess) {
+      reset()
+      setIsSubmitSuccess(false)
+    }
+  }, [isSubmitSuccess])
 
   return (
     <Stack px={1} py={1} spacing={2}>
@@ -55,21 +63,26 @@ const UserList = (props: UserListProps) => {
         ))}
       </Box>
       <Box px={1}>
-        <form onSubmit={addPerson}>
-          <TextField
-            fullWidth
+        <form onSubmit={handleSubmit(addPerson)}>
+          <Controller
             name='name'
-            size='small'
-            variant='standard'
-            placeholder='Enter names here'
-            type='text'
-            value={name}
-            onChange={handleTyping}
-            error={!!error}
-            helperText={error}
-            InputProps={{
-              autoComplete: 'off',
-            }}
+            control={control}
+            render={({ field }) => (
+               <TextField
+                 {...field}
+                 fullWidth
+                 name='name'
+                 size='small'
+                 variant='standard'
+                 placeholder='Enter names here'
+                 type='text'
+                 error={!!errors?.name}
+                 helperText={errors?.name?.message || ''}
+                 InputProps={{
+                   autoComplete: 'off',
+                 }}
+               />
+            )}
           />
         </form>
       </Box>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Box,
   Button, Checkbox,
@@ -16,70 +16,68 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import BillItem from './BillItem'
 import {Bill} from "../hooks/useBill";
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { Controller, SubmitHandler, useForm } from 'react-hook-form'
+import * as y from 'yup'
+import { yupResolver } from "@hookform/resolvers/yup"
+import { ERR_MSG_INTEGER_GE_0, ERR_MSG_NUMBER_GE_0, ERR_MSG_REQUIRED } from './helpers/form';
 
 export interface ItemizedBillProps {
   bill: Bill
 }
 
+const ITEMIZED_BILL_SCHEMA = y.object({
+  itemName: y
+    .string()
+    .default('')
+    .required(ERR_MSG_REQUIRED),
+  itemPrice: y
+    .number()
+    .min(0.01, ERR_MSG_NUMBER_GE_0)
+    .positive(ERR_MSG_NUMBER_GE_0)
+    .typeError(ERR_MSG_NUMBER_GE_0)
+    .required(ERR_MSG_REQUIRED),
+  itemQuantity: y
+    .number()
+    .integer()
+    .default(1)
+    .min(1, ERR_MSG_INTEGER_GE_0)
+    .positive(ERR_MSG_INTEGER_GE_0)
+    .typeError(ERR_MSG_INTEGER_GE_0)
+    .required(ERR_MSG_REQUIRED),
+})
+type ItemizedBillForm = y.InferType<typeof ITEMIZED_BILL_SCHEMA>
+
 const ItemizedBill = (props: ItemizedBillProps) => {
   const { bill } = props
-
   const [openAddItem, setOpenAddItem] = useState(false)
+  const [ isSubmitSuccess, setIsSubmitSuccess ] = useState(false)
 
-  //form values
-  const [itemName, setItemName] = useState('')
-  const [itemPrice, setItemPrice] = useState('0')
-  const [itemQuantity, setItemQuantity] = useState('1')
-  const [itemNameError, setItemNameError] = useState('')
-  const [itemPriceError, setItemPriceError] = useState('')
-  const [itemQuantityError, setItemQuantityError] = useState('')
+  const {
+    control,
+    handleSubmit,
+    setError,
+    reset,
+    formState: { errors },
+  } = useForm<ItemizedBillForm>({
+    resolver: yupResolver(ITEMIZED_BILL_SCHEMA),
+    defaultValues: ITEMIZED_BILL_SCHEMA.getDefault(),
+  })
 
-  const handleSubmit: React.FormEventHandler<HTMLFormElement> = e => {
-    e.preventDefault()
-    let error = false
-
-    if (!itemName) {
-      error = true
-      setItemNameError('Item name is required')
-    } else if (bill.items.find((item) => item.title === itemName)) {
-      error = true
-      setItemNameError('Item already exists')
-    }
-    const name = itemName
-
-    if (!itemPrice) {
-      error = true
-      setItemPriceError('Item price is required')
-    } else if (itemPrice.includes('e') || isNaN(Number(itemPrice))) {
-      error = true
-      setItemPriceError('Item price must be a number')
-    } else if (Number(itemPrice) <= 0) {
-      error = true
-      setItemPriceError('Item price must be greater than 0')
-    }
-    const price = Number(itemPrice)
-
-    if (!itemQuantity) {
-      error = true
-      setItemQuantityError('Item quantity is required')
-    } else if (itemQuantity.includes('e') || itemQuantity.includes('.') || isNaN(Number(itemQuantity))) {
-      error = true
-      setItemQuantityError('Item quantity must be a number')
-    } else if (Number(itemQuantity) <= 0) {
-      error = true
-      setItemQuantityError('Item quantity must be greater than 0')
-    }
-    const quantity = Number(itemQuantity)
-
-    if (error) {
+  const onSubmit: SubmitHandler<ItemizedBillForm> = (data) => {
+    if (bill.items.find((item) => item.title === data.itemName)) {
+      setError('itemName', { type: 'custom', message: 'Item already exists' })
       return
     }
-    bill.addItem(name, price, quantity)
-    setItemName('')
-    setItemPrice('0')
-    setItemQuantity('1')
+    bill.addItem(data.itemName, data.itemPrice, data.itemQuantity)
     setOpenAddItem(false)
   }
+
+  useEffect(() => {
+    if (isSubmitSuccess) {
+      reset()
+      setIsSubmitSuccess(false)
+    }
+  }, [isSubmitSuccess])
 
   return (
     <List sx={{ paddingBottom: 0 }}>
@@ -156,53 +154,64 @@ const ItemizedBill = (props: ItemizedBillProps) => {
       </ListItem>
       <Dialog open={openAddItem} onClose={() => setOpenAddItem(false)} fullWidth>
         <Box px={2} py={2}>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={2} textAlign='center'>
               <Typography variant='h2' fontSize={28}>
                 Add an item
                 <Divider />
               </Typography>
-              <TextField
-                fullWidth
-                label='Name'
+              <Controller
                 name='itemName'
-                size='small'
-                value={itemName}
-                error={!!itemNameError}
-                onChange={(e) => setItemName(e.target.value)}
-                helperText={itemNameError || ' '}
-                placeholder='e.g. Chicken Rice'
-                InputProps={{
-                  autoComplete: 'off',
-                }}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label='Name'
+                    size='small'
+                    error={!!errors?.itemName}
+                    helperText={errors?.itemName?.message || ''}
+                    placeholder='e.g. Chicken Rice'
+                    InputProps={{
+                      autoComplete: 'off',
+                    }}
+                  />
+                )}
               />
-              <TextField
-                fullWidth
-                label='Price'
+              <Controller
                 name='itemPrice'
-                size='small'
-                value={itemPrice}
-                error={!!itemPriceError}
-                onChange={(e) => setItemPrice(e.target.value)}
-                helperText={itemPriceError || ' '}
-                InputProps={{
-                  autoComplete: 'off',
-                  startAdornment: <InputAdornment position="start">$</InputAdornment>
-                }}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label='Price'
+                    size='small'
+                    error={!!errors?.itemPrice}
+                    helperText={errors?.itemPrice?.message || ''}
+                    InputProps={{
+                      autoComplete: 'off',
+                      startAdornment: <InputAdornment position="start">$</InputAdornment>
+                    }}
+                  />
+                )}
               />
-              <TextField
-                fullWidth
-                label='Quantity'
+              <Controller
                 name='itemQuantity'
-                size='small'
-                type='text'
-                value={itemQuantity}
-                error={!!itemQuantityError}
-                onChange={(e) => setItemQuantity(e.target.value)}
-                helperText={itemQuantityError || ' '}
-                InputProps={{
-                  autoComplete: 'off',
-                }}
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label='Quantity'
+                    size='small'
+                    error={!!errors?.itemQuantity}
+                    helperText={errors?.itemQuantity?.message || ''}
+                    InputProps={{
+                      autoComplete: 'off',
+                    }}
+                  />
+                )}
               />
               <Box display='flex' justifyContent='flex-end'>
                 <Button variant='contained' type='submit'>
