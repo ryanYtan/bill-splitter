@@ -54,6 +54,7 @@ export interface Bill {
   setTax: (tax: Tax) => void
   getTaxMultiplier: () => number
 
+  computeGstPrice: () => number
   computeSubTotalPrice: () => number
   computeTotalPrice: () => number
 
@@ -152,6 +153,15 @@ const useBill = (): Bill => {
     return items.reduce((acc, item) => acc + item.price * item.quantity, 0)
   }
 
+  const computeGstPrice = () => {
+    const taxMultiplier = taxes
+      .filter((tax) => tax.isApplied)
+      .filter((tax) => tax.id !== 1)
+      .map((tax) => 1 + (tax.percentage / 100)) //nice arithmetic error :^)
+      .reduce((acc, tax) => acc * tax, 1)
+    return (computeSubTotalPrice() * taxMultiplier) * (taxes.find((tax) => tax.id === 1)?.percentage || 0) / 100
+  }
+
   const computeTotalPrice = () => {
     const totalPriceBeforeTax = computeSubTotalPrice()
     const taxMultiplier = getTaxMultiplier()
@@ -201,6 +211,7 @@ const useBill = (): Bill => {
     deleteTax,
     setTax,
     getTaxMultiplier,
+    computeGstPrice,
     computeSubTotalPrice,
     computeTotalPrice,
     isReadyToComputeBill,

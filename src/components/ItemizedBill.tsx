@@ -140,6 +140,32 @@ const ItemizedBill = (props: ItemizedBillProps) => {
         </Typography>
       </ListItem>
       <Divider />
+      {bill.taxes.filter(t => t.isApplied && t.id === 0).map(tax => ( //this is awful but whatever
+        <>
+          <ListItem sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+            <Tooltip title={`${tax.percentage}% of the subtotal`}>
+              <InfoOutlinedIcon sx={{ fontSize: 12 }}/>
+            </Tooltip>
+            <Typography variant='button'>
+              <b>{tax.title}:</b>{' '}${(bill.computeSubTotalPrice() * (tax.percentage / 100)).toFixed(2)}
+            </Typography>
+          </ListItem>
+          <Divider />
+        </>
+      ))}
+      {bill.taxes.filter(t => t.isApplied && t.id === 1).map(tax => ( //this is awful but whatever
+        <>
+          <ListItem sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
+            <Tooltip title={`${tax.percentage}% of the sum of Subtotal and Service Charge (if available)`}>
+              <InfoOutlinedIcon sx={{ fontSize: 12 }}/>
+            </Tooltip>
+            <Typography variant='button'>
+              <b>{tax.title}:</b>{' '}${(bill.computeGstPrice()).toFixed(2)}
+            </Typography>
+          </ListItem>
+          <Divider />
+        </>
+      ))}
       <ListItem sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5 }}>
         <Tooltip title='Total after taxes'>
           <InfoOutlinedIcon sx={{ fontSize: 12 }}/>
