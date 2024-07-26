@@ -97,6 +97,12 @@ const ItemizedBill = (props: ItemizedBillProps) => {
           <Divider />
         </>
       ))}
+      <ListItem>
+        <Button fullWidth onClick={() => setOpenAddItem(true)}>
+          Add Item
+        </Button>
+      </ListItem>
+      <Divider />
       {bill.taxes && bill.taxes.map((tax, index) => (
         <>
           <ListItem
@@ -173,12 +179,6 @@ const ItemizedBill = (props: ItemizedBillProps) => {
         <Typography variant='button'>
           <b>Total:</b>{' '}${bill.computeTotalPrice().toFixed(2)}
         </Typography>
-      </ListItem>
-      <Divider />
-      <ListItem>
-        <Button fullWidth onClick={() => setOpenAddItem(true)}>
-          Add Item
-        </Button>
       </ListItem>
       <Dialog open={openAddItem} onClose={() => setOpenAddItem(false)} fullWidth>
         <Box px={2} py={2}>

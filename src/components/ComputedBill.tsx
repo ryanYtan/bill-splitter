@@ -75,9 +75,7 @@ const ComputedBill = (props: ComputedBillProps) => {
       ) : (
         <Typography variant='body2' gutterBottom={false}>
           {v.payer.name} owes {v.payee.name}{' '}
-          <b>${v.amount.toFixed(2)}</b>
-          <br/>
-          (<b>${(v.amount * bill.getTaxMultiplier()).toFixed(2)}</b> after tax)
+          <b>${(v.amount * bill.getTaxMultiplier()).toFixed(2)}</b> <em>(after tax)</em>
         </Typography>
       ))}
       <Grid container>
