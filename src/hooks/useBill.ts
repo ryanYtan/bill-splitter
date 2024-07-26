@@ -69,8 +69,8 @@ const useBill = (): Bill => {
   const [userItems, setUserItems] = useState<UserItem[]>([]) //modelling many-to-many
   const [whoPaid, setWhoPaid] = useState<User | null>(null) //who paid for the bill
   const [taxes, setTaxes] = useState<Tax[]>([
-    { id: 0, title: 'GST', percentage: 9, isApplied: true },
-    { id: 1, title: 'Service Charge', percentage: 10, isApplied: true },
+    { id: 0, title: 'Service Charge', percentage: 10, isApplied: true },
+    { id: 1, title: 'GST', percentage: 9, isApplied: true },
   ])
 
   const addUser = (name: string) => {
@@ -141,8 +141,11 @@ const useBill = (): Bill => {
   }
 
   const getTaxMultiplier = () => {
-    const percentage = taxes.reduce((acc, tax) => acc + (tax.isApplied ? tax.percentage : 0), 0)
-    return 1 + (percentage / 100)
+    const percentage = taxes
+      .filter((tax) => tax.isApplied)
+      .map((tax) => 1 + (tax.percentage / 100)) //nice arithmetic error :^)
+      .reduce((acc, tax) => acc * tax, 1)
+    return percentage
   }
 
   const computeSubTotalPrice = () => {
