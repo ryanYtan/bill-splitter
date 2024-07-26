@@ -32,6 +32,7 @@ const ITEMIZED_BILL_SCHEMA = y.object({
     .required(ERR_MSG_REQUIRED),
   itemPrice: y
     .number()
+    .default(0)
     .min(0.01, ERR_MSG_NUMBER_GE_0)
     .positive(ERR_MSG_NUMBER_GE_0)
     .typeError(ERR_MSG_NUMBER_GE_0)
@@ -70,6 +71,7 @@ const ItemizedBill = (props: ItemizedBillProps) => {
     }
     bill.addItem(data.itemName, data.itemPrice, data.itemQuantity)
     setOpenAddItem(false)
+    setIsSubmitSuccess(true)
   }
 
   useEffect(() => {
